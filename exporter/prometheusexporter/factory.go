@@ -69,6 +69,7 @@ func createMetricsExporter(
 		prometheus.ConsumeMetrics,
 		exporterhelper.WithCapabilities(consumer.Capabilities{MutatesData: false}),
 		exporterhelper.WithStart(prometheus.Start),
+		exporterhelper.WithTimeout(pcfg.TimeoutSettings),
 		exporterhelper.WithRetry(pcfg.RetrySettings),
 		exporterhelper.WithShutdown(prometheus.Shutdown),
 	)
