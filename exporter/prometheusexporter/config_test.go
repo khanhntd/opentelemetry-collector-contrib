@@ -15,6 +15,7 @@
 package prometheusexporter
 
 import (
+	"go.opentelemetry.io/collector/exporter/exporterhelper"
 	"path"
 	"testing"
 	"time"
@@ -49,6 +50,15 @@ func TestLoadConfig(t *testing.T) {
 			ConstLabels: map[string]string{
 				"label1":        "value1",
 				"another label": "spaced value",
+			},
+			TimeoutSettings: exporterhelper.TimeoutSettings{
+				Timeout: 20 * time.Second,
+			},
+			RetrySettings: exporterhelper.RetrySettings{
+				Enabled:         true,
+				InitialInterval: 10 * time.Second,
+				MaxInterval:     1 * time.Minute,
+				MaxElapsedTime:  10 * time.Minute,
 			},
 			SendTimestamps:   true,
 			MetricExpiration: 60 * time.Minute,
