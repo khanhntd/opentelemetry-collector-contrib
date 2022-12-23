@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/aws/aws-sdk-go v1.44.158
+	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.23.1
 	github.com/census-instrumentation/opencensus-proto v0.4.1
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
@@ -20,10 +21,12 @@ require (
 	go.opentelemetry.io/collector/pdata v1.0.0-rc1.0.20221216200611-892d07dffbb8
 	go.opentelemetry.io/collector/semconv v0.67.1-0.20221216200611-892d07dffbb8
 	go.uber.org/zap v1.24.0
+	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
 	google.golang.org/protobuf v1.28.1
 )
 
 require (
+	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

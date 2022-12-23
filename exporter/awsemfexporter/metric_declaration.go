@@ -18,10 +18,10 @@ import (
 	"bytes"
 	"errors"
 	"regexp"
-	"sort"
 	"strings"
 
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 // MetricDeclaration characterizes a rule to be used to set dimensions for certain
@@ -89,10 +89,6 @@ func (m *MetricDeclaration) init(logger *zap.Logger) (err error) {
 	seen := make(map[string]bool, len(m.Dimensions))
 	for _, dimSet := range m.Dimensions {
 		concatenatedDims := strings.Join(dimSet, ",")
-		if len(dimSet) > 10 {
-			logger.Warn("Dropped dimension set: > 10 dimensions specified.", zap.String("dimensions", concatenatedDims))
-			continue
-		}
 
 		// Dedup dimensions within dimension set
 		dedupedDims, hasDuplicate := dedupDimensionSet(dimSet)
@@ -100,8 +96,13 @@ func (m *MetricDeclaration) init(logger *zap.Logger) (err error) {
 			logger.Debug("Removed duplicates from dimension set.", zap.String("dimensions", concatenatedDims))
 		}
 
+		if len(dedupedDims) > 10 {
+			logger.Warn("Dropped dimension set: > 10 dimensions specified.", zap.String("dimensions", concatenatedDims))
+			continue
+		}
+
 		// Sort dimensions
-		sort.Strings(dedupedDims)
+		slices.Sort(dedupedDims)
 
 		// Dedup dimension sets
 		key := strings.Join(dedupedDims, ",")
@@ -186,8 +187,8 @@ func (lm *LabelMatcher) init() (err error) {
 	if len(lm.Separator) == 0 {
 		lm.Separator = ";"
 	}
-	lm.compiledRegex = regexp.MustCompile(lm.Regex)
-	return
+	lm.compiledRegex, err = regexp.Compile(lm.Regex)
+	return err
 }
 
 // Matches returns true if given set of labels matches the LabelMatcher's rules.

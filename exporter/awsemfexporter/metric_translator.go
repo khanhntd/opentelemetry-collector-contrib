@@ -20,17 +20,15 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/cwlogs"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.uber.org/zap"
-
-	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/cwlogs"
 )
 
 const (
 	// OTel instrumentation lib name as dimension
-	oTellibDimensionKey          = "OTelLib"
-	defaultNamespace             = "default"
-	noInstrumentationLibraryName = "Undefined"
+	oTellibDimensionKey = "OTelLib"
+	defaultNamespace    = "default"
 
 	// DimensionRollupOptions
 	zeroAndSingleDimensionRollup = "ZeroAndSingleDimensionRollup"
@@ -111,11 +109,7 @@ func (mt metricTranslator) translateOTelToGroupedMetric(rm pmetric.ResourceMetri
 	}
 	for j := 0; j < ilms.Len(); j++ {
 		ilm := ilms.At(j)
-		if ilm.Scope().Name() == "" {
-			instrumentationLibName = noInstrumentationLibraryName
-		} else {
-			instrumentationLibName = ilm.Scope().Name()
-		}
+		instrumentationLibName = ilm.Scope().Name()
 
 		metrics := ilm.Metrics()
 		for k := 0; k < metrics.Len(); k++ {

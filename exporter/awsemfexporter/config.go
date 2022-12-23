@@ -17,16 +17,17 @@ package awsemfexporter // import "github.com/open-telemetry/opentelemetry-collec
 import (
 	"errors"
 
-	"go.uber.org/zap"
-
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/awsutil"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/resourcetotelemetry"
+	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 var (
-	// eMFSupportedUnits contains the unit collection supported by CloudWatch backend service.
+	// emfSupportedUnits contains the unit collection supported by CloudWatch backend service.
 	// https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
-	eMFSupportedUnits = newEMFSupportedUnits()
+	emfSupportedUnits = cloudwatch.StandardUnit_Values()
 )
 
 // Config defines configuration for AWS EMF exporter.
@@ -111,7 +112,8 @@ func (config *Config) Validate() error {
 		if descriptor.MetricName == "" {
 			continue
 		}
-		if _, ok := eMFSupportedUnits[descriptor.Unit]; ok {
+
+		if ok := slices.Contains(emfSupportedUnits, descriptor.Unit); ok {
 			validDescriptors = append(validDescriptors, descriptor)
 		} else {
 			config.logger.Warn("Dropped unsupported metric desctriptor.", zap.String("unit", descriptor.Unit))
@@ -155,16 +157,4 @@ func isValidRetentionValue(input int64) bool {
 		return true
 	}
 	return false
-}
-
-func newEMFSupportedUnits() map[string]interface{} {
-	unitIndexer := map[string]interface{}{}
-	for _, unit := range []string{"Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes",
-		"Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
-		"Percent", "Count", "Bytes/Second", "Kilobytes/Second", "Megabytes/Second",
-		"Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second",
-		"Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", "None"} {
-		unitIndexer[unit] = nil
-	}
-	return unitIndexer
 }
