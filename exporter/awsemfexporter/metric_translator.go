@@ -85,7 +85,7 @@ type metricTranslator struct {
 	metricDescriptor map[string]MetricDescriptor
 }
 
-func newMetricTranslator(config Config) metricTranslator {
+func newMetricTranslator(config *Config) metricTranslator {
 	mt := map[string]MetricDescriptor{}
 	for _, descriptor := range config.MetricDescriptors {
 		mt[descriptor.MetricName] = descriptor

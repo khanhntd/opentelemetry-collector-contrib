@@ -20,15 +20,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/awsutil"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/resourcetotelemetry"
+	"go.opentelemetry.io/collector/component"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
-var (
-	// emfSupportedUnits contains the unit collection supported by CloudWatch backend service.
-	// https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
-	emfSupportedUnits = cloudwatch.StandardUnit_Values()
-)
+// emfSupportedUnits contains the unit collection supported by CloudWatch backend service.
+// https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
+var emfSupportedUnits = cloudwatch.StandardUnit_Values()
 
 // Config defines configuration for AWS EMF exporter.
 type Config struct {
@@ -84,27 +83,21 @@ type Config struct {
 	logger *zap.Logger
 }
 
-type MetricDescriptor struct {
-	// MetricName is the name of the metric
-	MetricName string `mapstructure:"metric_name"`
-	// Unit defines the override value of metric descriptor `unit`
-	Unit string `mapstructure:"unit"`
-	// Overwrite set to true means the existing metric descriptor will be overwritten or a new metric descriptor will be created; false means
-	// the descriptor will only be configured if empty.
-	Overwrite bool `mapstructure:"overwrite"`
-}
+var _ component.Config = (*Config)(nil)
 
 // Validate filters out invalid metricDeclarations and metricDescriptors
 func (config *Config) Validate() error {
+
 	var validDeclarations []*MetricDeclaration
 	for _, declaration := range config.MetricDeclarations {
-		err := declaration.init(config.logger)
-		if err != nil {
+		if err := declaration.init(config.logger); err != nil {
 			config.logger.Warn("Dropped metric declaration.", zap.Error(err))
-		} else {
-			validDeclarations = append(validDeclarations, declaration)
+			continue
 		}
+
+		validDeclarations = append(validDeclarations, declaration)
 	}
+
 	config.MetricDeclarations = validDeclarations
 
 	var validDescriptors []MetricDescriptor
