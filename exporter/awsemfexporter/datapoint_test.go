@@ -312,7 +312,6 @@ func TestIntDataPointSliceAt(t *testing.T) {
 			testDP.Attributes().PutStr("label", "value")
 
 			dps := numberDataPointSlice{
-				instrLibName,
 				deltaMetricMetadata{
 					tc.adjustToDelta,
 					"foo",
@@ -332,11 +331,11 @@ func TestIntDataPointSliceAt(t *testing.T) {
 			}
 
 			assert.Equal(t, 1, dps.Len())
-			dp, retained := dps.At(0)
+			dp, retained := dps.CalculateDeltaDatapoints(0, instrLibName)
 			assert.Equal(t, i > 0, retained)
 			if retained {
-				assert.Equal(t, expectedDP.labels, dp.labels)
-				assert.InDelta(t, expectedDP.value.(float64), dp.value.(float64), 0.02)
+				assert.Equal(t, expectedDP.labels, dp[0].labels)
+				assert.InDelta(t, expectedDP.value.(float64), dp[0].value.(float64), 0.02)
 			}
 		})
 	}
@@ -381,7 +380,6 @@ func TestDoubleDataPointSliceAt(t *testing.T) {
 			testDP.Attributes().PutStr("label1", "value1")
 
 			dps := numberDataPointSlice{
-				instrLibName,
 				deltaMetricMetadata{
 					tc.adjustToDelta,
 					"foo",
@@ -393,10 +391,10 @@ func TestDoubleDataPointSliceAt(t *testing.T) {
 			}
 
 			assert.Equal(t, 1, dps.Len())
-			dp, retained := dps.At(0)
+			dp, retained := dps.CalculateDeltaDatapoints(0, instrLibName)
 			assert.Equal(t, i > 0, retained)
 			if retained {
-				assert.InDelta(t, tc.calculatedValue.(float64), dp.value.(float64), 0.002)
+				assert.InDelta(t, tc.calculatedValue.(float64), dp[0].value.(float64), 0.002)
 			}
 		})
 	}
@@ -414,11 +412,18 @@ func TestHistogramDataPointSliceAt(t *testing.T) {
 	testDP.Attributes().PutStr("label1", "value1")
 
 	dps := histogramDataPointSlice{
-		instrLibName,
+		deltaMetricMetadata{
+			false,
+			"foo",
+			"namespace",
+			"log-group",
+			"log-stream",
+		},
 		testDPS,
 	}
 
 	expectedDP := dataPoint{
+		name: "foo",
 		value: &cWMetricStats{
 			Sum:   17.13,
 			Count: 17,
@@ -430,8 +435,8 @@ func TestHistogramDataPointSliceAt(t *testing.T) {
 	}
 
 	assert.Equal(t, 1, dps.Len())
-	dp, _ := dps.At(0)
-	assert.Equal(t, expectedDP, dp)
+	dp, _ := dps.CalculateDeltaDatapoints(0, instrLibName)
+	assert.Equal(t, expectedDP, dp[0])
 }
 
 func TestHistogramDataPointSliceAtWithMinMax(t *testing.T) {
@@ -446,11 +451,18 @@ func TestHistogramDataPointSliceAtWithMinMax(t *testing.T) {
 	testDP.Attributes().PutStr("label1", "value1")
 
 	dps := histogramDataPointSlice{
-		instrLibName,
+		deltaMetricMetadata{
+			false,
+			"foo",
+			"namespace",
+			"log-group",
+			"log-stream",
+		},
 		testDPS,
 	}
 
 	expectedDP := dataPoint{
+		name: "foo",
 		value: &cWMetricStats{
 			Sum:   17.13,
 			Count: 17,
@@ -464,8 +476,8 @@ func TestHistogramDataPointSliceAtWithMinMax(t *testing.T) {
 	}
 
 	assert.Equal(t, 1, dps.Len())
-	dp, _ := dps.At(0)
-	assert.Equal(t, expectedDP, dp)
+	dp, _ := dps.CalculateDeltaDatapoints(0, instrLibName)
+	assert.Equal(t, expectedDP, dp[0])
 }
 
 func TestHistogramDataPointSliceAtWithoutMinMax(t *testing.T) {
@@ -478,11 +490,18 @@ func TestHistogramDataPointSliceAtWithoutMinMax(t *testing.T) {
 	testDP.Attributes().PutStr("label1", "value1")
 
 	dps := histogramDataPointSlice{
-		instrLibName,
+		deltaMetricMetadata{
+			false,
+			"foo",
+			"namespace",
+			"log-group",
+			"log-stream",
+		},
 		testDPS,
 	}
 
 	expectedDP := dataPoint{
+		name: "foo",
 		value: &cWMetricStats{
 			Sum:   17.13,
 			Count: 17,
@@ -496,8 +515,8 @@ func TestHistogramDataPointSliceAtWithoutMinMax(t *testing.T) {
 	}
 
 	assert.Equal(t, 1, dps.Len())
-	dp, _ := dps.At(0)
-	assert.Equal(t, expectedDP, dp)
+	dp, _ := dps.CalculateDeltaDatapoints(0, instrLibName)
+	assert.Equal(t, expectedDP, dp[0])
 }
 
 func TestSummaryDataPointSliceAt(t *testing.T) {
@@ -544,7 +563,6 @@ func TestSummaryDataPointSliceAt(t *testing.T) {
 			testDP.Attributes().PutStr("label1", "value1")
 
 			dps := summaryDataPointSlice{
-				instrLibName,
 				deltaMetricMetadata{
 					true,
 					"foo",
@@ -569,12 +587,12 @@ func TestSummaryDataPointSliceAt(t *testing.T) {
 			}
 
 			assert.Equal(t, 1, dps.Len())
-			dp, retained := dps.At(0)
+			dp, retained := dps.CalculateDeltaDatapoints(0, instrLibName)
 			assert.Equal(t, i > 0, retained)
 			if retained {
 				expectedMetricStats := expectedDP.value.(*cWMetricStats)
-				actualMetricsStats := dp.value.(*cWMetricStats)
-				assert.Equal(t, expectedDP.labels, dp.labels)
+				actualMetricsStats := dp[0].value.(*cWMetricStats)
+				assert.Equal(t, expectedDP.labels, dp[0].labels)
 				assert.Equal(t, expectedMetricStats.Max, actualMetricsStats.Max)
 				assert.Equal(t, expectedMetricStats.Min, actualMetricsStats.Min)
 				assert.InDelta(t, expectedMetricStats.Count, actualMetricsStats.Count, 0.1)
@@ -635,14 +653,13 @@ func TestGetDataPoints(t *testing.T) {
 		testName            string
 		isPrometheusMetrics bool
 		metric              *metricspb.Metric
-		expectedDataPoints  dataPoints
+		expectedDataPoints  dataPointSlice
 	}{
 		{
 			"Int gauge",
 			false,
 			generateTestIntGauge("foo"),
 			numberDataPointSlice{
-				metadata.instrumentationLibraryName,
 				dmm,
 				pmetric.NumberDataPointSlice{},
 			},
@@ -652,7 +669,6 @@ func TestGetDataPoints(t *testing.T) {
 			false,
 			generateTestDoubleGauge("foo"),
 			numberDataPointSlice{
-				metadata.instrumentationLibraryName,
 				dmm,
 				pmetric.NumberDataPointSlice{},
 			},
@@ -662,7 +678,6 @@ func TestGetDataPoints(t *testing.T) {
 			false,
 			generateTestIntSum("foo")[1],
 			numberDataPointSlice{
-				metadata.instrumentationLibraryName,
 				cumulativeDmm,
 				pmetric.NumberDataPointSlice{},
 			},
@@ -672,7 +687,6 @@ func TestGetDataPoints(t *testing.T) {
 			false,
 			generateTestDoubleSum("foo")[1],
 			numberDataPointSlice{
-				metadata.instrumentationLibraryName,
 				cumulativeDmm,
 				pmetric.NumberDataPointSlice{},
 			},
@@ -682,7 +696,7 @@ func TestGetDataPoints(t *testing.T) {
 			false,
 			generateTestHistogram("foo"),
 			histogramDataPointSlice{
-				metadata.instrumentationLibraryName,
+				cumulativeDmm,
 				pmetric.HistogramDataPointSlice{},
 			},
 		},
@@ -691,7 +705,6 @@ func TestGetDataPoints(t *testing.T) {
 			false,
 			generateTestSummary("foo")[1],
 			summaryDataPointSlice{
-				metadata.instrumentationLibraryName,
 				dmm,
 				pmetric.SummaryDataPointSlice{},
 			},
@@ -701,7 +714,6 @@ func TestGetDataPoints(t *testing.T) {
 			true,
 			generateTestSummary("foo")[1],
 			summaryDataPointSlice{
-				metadata.instrumentationLibraryName,
 				cumulativeDmm,
 				pmetric.SummaryDataPointSlice{},
 			},
@@ -733,7 +745,6 @@ func TestGetDataPoints(t *testing.T) {
 			switch convertedDPS := dps.(type) {
 			case numberDataPointSlice:
 				expectedDPS := tc.expectedDataPoints.(numberDataPointSlice)
-				assert.Equal(t, metadata.instrumentationLibraryName, convertedDPS.instrumentationLibraryName)
 				assert.Equal(t, expectedDPS.deltaMetricMetadata, convertedDPS.deltaMetricMetadata)
 				assert.Equal(t, 1, convertedDPS.Len())
 				dp := convertedDPS.NumberDataPointSlice.At(0)
@@ -745,7 +756,6 @@ func TestGetDataPoints(t *testing.T) {
 				}
 				assert.Equal(t, expectedAttributes, dp.Attributes().AsRaw())
 			case histogramDataPointSlice:
-				assert.Equal(t, metadata.instrumentationLibraryName, convertedDPS.instrumentationLibraryName)
 				assert.Equal(t, 1, convertedDPS.Len())
 				dp := convertedDPS.HistogramDataPointSlice.At(0)
 				assert.Equal(t, 35.0, dp.Sum())
@@ -754,7 +764,6 @@ func TestGetDataPoints(t *testing.T) {
 				assert.Equal(t, expectedAttributes, dp.Attributes().AsRaw())
 			case summaryDataPointSlice:
 				expectedDPS := tc.expectedDataPoints.(summaryDataPointSlice)
-				assert.Equal(t, metadata.instrumentationLibraryName, convertedDPS.instrumentationLibraryName)
 				assert.Equal(t, expectedDPS.deltaMetricMetadata, convertedDPS.deltaMetricMetadata)
 				assert.Equal(t, 1, convertedDPS.Len())
 				dp := convertedDPS.SummaryDataPointSlice.At(0)
@@ -814,7 +823,6 @@ func BenchmarkGetDataPoints(b *testing.B) {
 			logGroup:    "log-group",
 			logStream:   "log-stream",
 		},
-		instrumentationLibraryName: "cloudwatch-otel",
 	}
 
 	logger := zap.NewNop()
@@ -824,36 +832,5 @@ func BenchmarkGetDataPoints(b *testing.B) {
 		for i := 0; i < numMetrics; i++ {
 			getDataPoints(metrics.At(i), metadata, logger)
 		}
-	}
-}
-
-func TestIntDataPointSlice_At(t *testing.T) {
-	type fields struct {
-		instrumentationLibraryName string
-		deltaMetricMetadata        deltaMetricMetadata
-		NumberDataPointSlice       pmetric.NumberDataPointSlice
-	}
-	type args struct {
-		i int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   dataPoint
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			dps := numberDataPointSlice{
-				instrumentationLibraryName: tt.fields.instrumentationLibraryName,
-				deltaMetricMetadata:        tt.fields.deltaMetricMetadata,
-				NumberDataPointSlice:       tt.fields.NumberDataPointSlice,
-			}
-			if got, _ := dps.At(tt.args.i); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("At() = %v, want %v", got, tt.want)
-			}
-		})
 	}
 }

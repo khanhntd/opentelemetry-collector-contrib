@@ -42,6 +42,18 @@ func calculateSummaryDelta(prev *aws.MetricValue, val interface{}, timestampMs t
 	return summaryMetricEntry{summaryDelta, countDelta}, true
 }
 
+func mergeLabels(m deltaMetricMetadata, labels map[string]string) map[string]string {
+	result := map[string]string{
+		"namespace": m.namespace,
+		"logGroup":  m.logGroup,
+		"logStream": m.logStream,
+	}
+	for k, v := range labels {
+		result[k] = v
+	}
+	return result
+}
+
 // dataPoint represents a processed metric data point
 type dataPoint struct {
 	name        string
@@ -114,7 +126,7 @@ func (dps numberDataPointSlice) CalculateDeltaDatapoints(i int, instrumentationL
 
 	if dps.adjustToDelta {
 		var deltaVal interface{}
-		deltaVal, retained = deltaMetricCalculator.Calculate(aws.NewKey(dps.deltaMetricMetadata, labels), metricVal, metric.Timestamp().AsTime())
+		deltaVal, retained = deltaMetricCalculator.Calculate(dps.metricName, mergeLabels(dps.deltaMetricMetadata, labels), metricVal, metric.Timestamp().AsTime())
 		if !retained {
 			return datapoints, retained
 		}
@@ -162,7 +174,7 @@ func (dps summaryDataPointSlice) CalculateDeltaDatapoints(i int, instrumentation
 
 	if dps.adjustToDelta {
 		var delta interface{}
-		delta, retained = summaryMetricCalculator.Calculate(aws.NewKey(dps.deltaMetricMetadata, labels), summaryMetricEntry{sum, count}, metric.Timestamp().AsTime())
+		delta, retained = summaryMetricCalculator.Calculate(dps.metricName, mergeLabels(dps.deltaMetricMetadata, labels), summaryMetricEntry{sum, count}, metric.Timestamp().AsTime())
 		if !retained {
 			return datapoints, retained
 		}
@@ -170,8 +182,8 @@ func (dps summaryDataPointSlice) CalculateDeltaDatapoints(i int, instrumentation
 		sum = summaryMetricDelta.sum
 		count = summaryMetricDelta.count
 	}
-
-	if false {
+	debugFlags := false
+	if debugFlags {
 		metricVal := &cWMetricStats{
 			Count: count,
 			Sum:   sum,
@@ -180,7 +192,7 @@ func (dps summaryDataPointSlice) CalculateDeltaDatapoints(i int, instrumentation
 			metricVal.Min = quantileValues.At(0).Value()
 			metricVal.Max = quantileValues.At(quantileValues.Len() - 1).Value()
 		}
-		datapoints = append(datapoints, dataPoint{value: metricVal, labels: labels, timestampMs: timestampMs})
+		datapoints = append(datapoints, dataPoint{name: dps.metricName, value: metricVal, labels: labels, timestampMs: timestampMs})
 	} else {
 		values := metric.QuantileValues()
 		datapoints = append(datapoints, dataPoint{name: fmt.Sprint(dps.metricName, "_count"), value: count, labels: labels, timestampMs: timestampMs})

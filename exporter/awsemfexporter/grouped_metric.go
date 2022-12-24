@@ -97,9 +97,13 @@ func addToGroupedMetric(pmd pmetric.Metric, groupedMetrics map[interface{}]*grou
 					metadata: metadata,
 				}
 			}
+			logger.Info("Group Metrics Individual keys", zap.Any("test", groupedMetrics[groupKey].metrics[dp.name]))
+
 		}
 
 	}
+
+	logger.Info("Group Metrics ", zap.Any("test", groupedMetrics))
 
 	return nil
 }

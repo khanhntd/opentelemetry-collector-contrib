@@ -3,30 +3,28 @@ module github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awsemf
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.158
-	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.23.1
+	github.com/aws/aws-sdk-go v1.44.163
 	github.com/census-instrumentation/opencensus-proto v0.4.1
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/awsutil v0.67.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/cwlogs v0.67.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/metrics v0.67.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/resourcetotelemetry v0.67.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/translator/opencensus v0.67.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/awsutil v0.68.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/cwlogs v0.68.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/metrics v0.68.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/resourcetotelemetry v0.68.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/translator/opencensus v0.68.0
 	github.com/stretchr/testify v1.8.1
-	go.opentelemetry.io/collector v0.67.1-0.20221216200611-892d07dffbb8
-	go.opentelemetry.io/collector/component v0.67.1-0.20221216200611-892d07dffbb8
-	go.opentelemetry.io/collector/confmap v0.67.1-0.20221216200611-892d07dffbb8
-	go.opentelemetry.io/collector/consumer v0.67.1-0.20221216200611-892d07dffbb8
-	go.opentelemetry.io/collector/pdata v1.0.0-rc1.0.20221216200611-892d07dffbb8
-	go.opentelemetry.io/collector/semconv v0.67.1-0.20221216200611-892d07dffbb8
+	go.opentelemetry.io/collector v0.68.0
+	go.opentelemetry.io/collector/component v0.68.0
+	go.opentelemetry.io/collector/confmap v0.68.0
+	go.opentelemetry.io/collector/consumer v0.68.0
+	go.opentelemetry.io/collector/pdata v1.0.0-rc2
+	go.opentelemetry.io/collector/semconv v0.68.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
 	google.golang.org/protobuf v1.28.1
 )
 
 require (
-	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -40,11 +38,11 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.67.0 // indirect
+	github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.68.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/collector/featuregate v0.67.1-0.20221216200611-892d07dffbb8 // indirect
+	go.opentelemetry.io/collector/featuregate v0.68.0 // indirect
 	go.opentelemetry.io/otel v1.11.2 // indirect
 	go.opentelemetry.io/otel/metric v0.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.11.2 // indirect
